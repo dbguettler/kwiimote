@@ -82,6 +82,6 @@ The Wii remote will vibrate briefly when it is connected. The selected device wi
 | 4 | Indicates that the second device is selected |
 
 ## Future Improvements
-- [ ] Add controls for smart bulb brightness
-- [ ] Improve controls when using only a single device
+- [ ] #1 Add controls for smart bulb brightness
+- [ ] #2 Improve controls when using only a single device
 - [ ] Possibly add support for controlling more than 2 devices
