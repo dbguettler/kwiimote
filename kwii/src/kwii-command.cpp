@@ -29,9 +29,9 @@
 #include <arpa/inet.h>
 #include <ros/ros.h>
 #include <std_msgs/String.h>
+#include "kwii/DevCmd.h"
 
 #define KASA_PORT 9999
-#define IP_ADDR "192.168.68.91"
 
 uint8_t *kasa_crypto(const uint8_t *p, int len, int enc)
 {
@@ -57,7 +57,7 @@ uint8_t *kasa_decrypt(const uint8_t *p, int len)
 	return kasa_crypto(p, len, 0);
 }
 
-void command_callback(const std_msgs::String::ConstPtr &msg);
+void command_callback(const kwii::DevCmd::ConstPtr &msg);
 
 int main(int argc, char **argv)
 {
@@ -71,16 +71,16 @@ int main(int argc, char **argv)
 	return EXIT_SUCCESS;
 }
 
-void command_callback(const std_msgs::String::ConstPtr &msg)
+void command_callback(const kwii::DevCmd::ConstPtr &msg)
 {
 	struct in_addr addr;
-	if (!inet_aton(IP_ADDR, &addr))
+	if (!inet_aton(msg->ip.c_str(), &addr))
 	{
-		fprintf(stderr, "Could not parse \"%s\" as an IP\n", IP_ADDR);
+		fprintf(stderr, "Could not parse \"%s\" as an IP\n", msg->ip.c_str());
 		exit(1);
 	}
 
-	uint8_t *enc = kasa_encrypt((const uint8_t *)msg->data.c_str(), strlen(msg->data.c_str()));
+	uint8_t *enc = kasa_encrypt((const uint8_t *)msg->cmd.c_str(), strlen(msg->cmd.c_str()));
 
 	int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
 	if (sock == -1)
@@ -103,7 +103,7 @@ void command_callback(const std_msgs::String::ConstPtr &msg)
 	sin.sin_family = AF_INET;
 	sin.sin_port = htons(KASA_PORT);
 	sin.sin_addr = addr;
-	res = sendto(sock, enc, strlen(msg->data.c_str()), 0, (struct sockaddr *)&sin, sizeof(sin));
+	res = sendto(sock, enc, strlen(msg->cmd.c_str()), 0, (struct sockaddr *)&sin, sizeof(sin));
 	if (res == -1)
 	{
 		perror("sendto");
@@ -124,5 +124,4 @@ void command_callback(const std_msgs::String::ConstPtr &msg)
 	fwrite((const char *)dec, 1, res, stdout);
 	putchar('\n');
 	free(dec);
-	// std::cout << std::flush;
 }

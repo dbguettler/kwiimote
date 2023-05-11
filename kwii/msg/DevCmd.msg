@@ -1,0 +1,2 @@
+string ip
+string cmd
