@@ -8,6 +8,7 @@
 #define MAX_WIIMOTES 1
 
 short any_wiimote_connected(wiimote **wm, int wiimotes);
+void state_callback(const std_msgs::String::ConstPtr &msg);
 
 int main(int argc, char **argv)
 {
@@ -19,9 +20,6 @@ int main(int argc, char **argv)
     // Init wiimote array
     wiimotes = wiiuse_init(MAX_WIIMOTES);
     wm = wiimotes[0];
-
-    // std::cout << "Searching for wiimotes..." << std::endl;
-    // std::cout << std::flush;
 
     // Find wiimotes to use
     found = wiiuse_find(&wm, MAX_WIIMOTES, 5);
@@ -37,12 +35,10 @@ int main(int argc, char **argv)
     connected = wiiuse_connect(&wm, MAX_WIIMOTES);
     if (connected)
     {
-        // printf("Connected to %i wiimotes (of %i found).\n", connected, found);
         std::cout << "Connected to " << connected << " wiimotes (of " << found << " found)." << std::endl;
     }
     else
     {
-        // printf("Failed to connect to any wiimote.\n");
         std::cout << "Failed to connect to any wiimote.\n"
                   << std::endl;
         wiiuse_cleanup(wiimotes, MAX_WIIMOTES);
@@ -58,10 +54,9 @@ int main(int argc, char **argv)
     ros::NodeHandle handle;
 
     ros::Publisher pub = handle.advertise<std_msgs::String>("button_events", 10);
+    ros::Subscriber sub = handle.subscribe("state", 100, state_callback);
 
-    // printf("\n\nPress 'A' on the Wii remote to exit...\n");
     std::cout << "Power off the Wii remote to exit." << std::endl;
-    // std::cout << std::flush;
 
     while (any_wiimote_connected(&wm, MAX_WIIMOTES) && ros::ok())
     {
@@ -80,11 +75,11 @@ int main(int argc, char **argv)
                 pub.publish(str_msg);
             }
         }
+        ros::spinOnce();
     }
 
     wiiuse_cleanup(wiimotes, MAX_WIIMOTES);
 
-    // printf("Done!\n");
     std::cout << "Done!" << std::endl;
     return EXIT_SUCCESS;
 }
@@ -106,4 +101,9 @@ short any_wiimote_connected(wiimote **wm, int wiimotes)
     }
 
     return 0;
+}
+
+void state_callback(const std_msgs::String::ConstPtr &msg)
+{
+    std::cout << "Device State: " << msg->data.c_str() << std::endl;
 }

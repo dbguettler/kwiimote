@@ -4,15 +4,22 @@ import asyncio
 from kasa import Discover
 import rospy
 from std_msgs.msg import String
-        
 
-def callback(data, publ):
-    if data.data == "A":
-        print("ON")
-        publ.publish('{"system":{"set_relay_state":{"state":1}}}')
-    elif data.data == "B":
-        print("OFF")
-        publ.publish('{"system":{"set_relay_state":{"state":0}}}')
+class kwii_main_node:
+    def __init__(self, devices):
+        rospy.init_node('kwii_main_node')
+        self.command_pub = rospy.Publisher("commands", String, queue_size=10)
+        self.state_pub = rospy.Publisher("state", String, queue_size=10)
+        self.devices = devices
+        self.button_sub = rospy.Subscriber("button_events", String, self.callback)
+            
+    def callback(self, data):
+        if data.data == "A":
+            self.command_pub.publish('{"system":{"set_relay_state":{"state":1}}}')
+            self.state_pub.publish("ON")
+        elif data.data == "B":
+            self.command_pub.publish('{"system":{"set_relay_state":{"state":0}}}')
+            self.state_pub.publish("OFF")
 
 async def main():
     known_devices = await Discover.discover()
@@ -27,9 +34,7 @@ async def main():
     else:
         print("Device is", device)
         
-    pub = rospy.Publisher("commands", String, queue_size=10)
-    rospy.init_node('kwii_output_node')
-    rospy.Subscriber('button_events', String, callback, (pub))
+    node = kwii_main_node(known_devices)
     rospy.spin()
 
 
