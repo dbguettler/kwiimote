@@ -84,6 +84,6 @@ To exit, simply hold the power button on the Wii remote until it turns off. The 
 | 4 | Indicates that the second device is selected |
 
 ## Future Improvements
-- [ ] Add controls for smart bulb brightness
-- [ ] Improve controls when using only a single device
+- [ ] [#1](https://github.com/dbguettler/kwiimote/issues/1) Add controls for smart bulb brightness
+- [ ] [#2](https://github.com/dbguettler/kwiimote/issues/2) Improve controls when using only a single device
 - [ ] Possibly add support for controlling more than 2 devices
