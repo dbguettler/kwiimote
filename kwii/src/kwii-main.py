@@ -5,26 +5,29 @@ from kasa import Discover
 import rospy
 from std_msgs.msg import String, Bool
 from kwii.msg import DevCmd
+from os import environ
 
 
 class kwii_main_node:
-    def __init__(self, devices, alias):
-        rospy.init_node('kwii_main_node')
+    def __init__(self, devices, dev_aliases):
+        rospy.init_node("kwii_main_node")
         self.command_pub = rospy.Publisher("commands", DevCmd, queue_size=10)
         self.state_pub = rospy.Publisher("state", Bool, queue_size=10)
         self.devices = devices
         self.device = None
         for key, value in self.devices.items():
-            if value.sys_info["alias"] == alias:
+            if value.sys_info["alias"] == dev_aliases[0]:
                 self.device = value
         if self.device is None:
-            print("Error: could not locate device ", alias)
+            print("Error: could not locate device ", dev_aliases[0])
             exit(1)
         else:
-            print("Located device", alias, "at", self.device.host)
-        self.button_sub = rospy.Subscriber("button_events", String, self.button_callback)
+            print("Located device", dev_aliases[0], "at", self.device.host)
+        self.button_sub = rospy.Subscriber(
+            "button_events", String, self.button_callback
+        )
         self.state_initialized = False
-            
+
     def button_callback(self, data):
         if not self.state_initialized:
             self.state_initialized = True
@@ -48,7 +51,7 @@ class kwii_main_node:
                 self.state_pub.publish(False)
         else:
             print("NOTA")
-    
+
     def get_command(self, mic_type, action):
         if mic_type == "IOT.SMARTPLUGSWITCH":
             if action == "ON":
@@ -62,15 +65,12 @@ class kwii_main_node:
                 return '{"smartlife.iot.smartbulb.lightingservice":{"transition_light_state":{"on_off":0,"transition_period":0}}}'
         return ""
 
-        
 
 async def main():
-    known_devices = await Discover.discover()       
-    node = kwii_main_node(known_devices, "Drew Lamp")
+    known_devices = await Discover.discover()
+    node = kwii_main_node(known_devices, (environ.get("DEV_1"), environ.get("DEV_2")))
     rospy.spin()
 
-
-        
 
 if __name__ == "__main__":
     asyncio.run(main())
