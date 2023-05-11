@@ -64,22 +64,23 @@ int main(int argc, char **argv)
     {
         if (wiiuse_poll(&wm, MAX_WIIMOTES) && wm->event == WIIUSE_EVENT)
         {
+            std_msgs::String str_msg;
+            str_msg.data = "";
             if (IS_PRESSED(wm, WIIMOTE_BUTTON_A))
             {
-                std_msgs::String str_msg;
                 str_msg.data = "A";
-                pub.publish(str_msg);
             }
             else if IS_PRESSED (wm, WIIMOTE_BUTTON_B)
             {
-                std_msgs::String str_msg;
                 str_msg.data = "B";
-                pub.publish(str_msg);
             }
             else if IS_PRESSED (wm, WIIMOTE_BUTTON_HOME)
             {
-                std_msgs::String str_msg;
                 str_msg.data = "HOME";
+            }
+
+            if (str_msg.data.compare("") != 0)
+            {
                 pub.publish(str_msg);
             }
         }
