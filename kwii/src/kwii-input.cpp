@@ -27,6 +27,13 @@ int main(int argc, char **argv)
     wiimotes = wiiuse_init(MAX_WIIMOTES);
     wm = wiimotes[0];
 
+    std::cout << "\n==================================================================\n"
+              << "==================================================================\n"
+              << "Press SYNC or (1) and (2) simultaneously to pair the Wii remote...\n"
+              << "==================================================================\n"
+              << "==================================================================\n"
+              << std::endl;
+
     // Find wiimotes to use
     found = wiiuse_find(&wm, MAX_WIIMOTES, 5);
     if (!found)
