@@ -22,7 +22,7 @@ class kwii_main_node:
         for key, value in devices.items():
             if value.sys_info["alias"] == dev_aliases[0]:
                 self.devices[0] = value
-            elif value.sys_info["alias"] == dev_aliases[1]:
+            if value.sys_info["alias"] == dev_aliases[1]:
                 self.devices[1] = value
 
         # Check if devices could be located
@@ -140,7 +140,11 @@ class kwii_main_node:
 async def main():
     # Discover devices and construct node
     known_devices = await Discover.discover()
-    node = kwii_main_node(known_devices, (environ.get("DEV_1"), environ.get("DEV_2")))
+    dev_one = environ.get("DEV_1")
+    dev_two = environ.get("DEV_2")
+    if dev_two == "":
+        dev_two = dev_one
+    node = kwii_main_node(known_devices, (dev_one, dev_two))
     # Spin
     rospy.spin()
 
