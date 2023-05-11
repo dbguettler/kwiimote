@@ -1,5 +1,5 @@
 <launch>
     <node pkg="kwii" type="kwii_input_node" name="kwii_input" required="true" output="screen"/>
     <node pkg="kwii" type="kwii_command_node" name="kwii_command" respawn="true" output="screen"/>
-    <node pkg="kwii" type="kwii-output.py" name="kwii_output" respawn="true" output="screen"/>
+    <node pkg="kwii" type="kwii-main.py" name="kwii_main" respawn="true" output="screen"/>
 </launch>

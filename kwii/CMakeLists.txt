@@ -136,7 +136,7 @@ include_directories(
 # add_executable(${PROJECT_NAME}_node src/kwii_node.cpp)
 
 add_executable(kwii_input_node src/kwii-input.cpp)
-add_executable(kwii_command_node src/kasa.cpp)
+add_executable(kwii_command_node src/kwii-command.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -168,7 +168,7 @@ target_link_libraries(kwii_command_node ${catkin_LIBRARIES})
 #   scripts/my_python_script
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
-catkin_install_python(PROGRAMS src/kwii-output.py
+catkin_install_python(PROGRAMS src/kwii-main.py
     DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
