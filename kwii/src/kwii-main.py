@@ -60,9 +60,7 @@ class kwii_main_node:
 
             # Get the command to send based on the device type
             cmd_msg = DevCmd()
-            cmd_msg.cmd = self.get_command(
-                self.devices[self.current_device].sys_info["mic_type"], "ON"
-            )
+            cmd_msg.cmd = self.get_command(self.devices[self.current_device], "ON")
 
             if not cmd_msg.cmd == "":
                 # Getting the command shouldn't fail, but if it did this isn't executed
@@ -84,9 +82,7 @@ class kwii_main_node:
 
             # Get the command to send based on the device type
             cmd_msg = DevCmd()
-            cmd_msg.cmd = self.get_command(
-                self.devices[self.current_device].sys_info["mic_type"], "OFF"
-            )
+            cmd_msg.cmd = self.get_command(self.devices[self.current_device], "OFF")
 
             if not cmd_msg.cmd == "":
                 # Getting the command shouldn't fail, but if it did this isn't executed
@@ -123,13 +119,17 @@ class kwii_main_node:
             print("No actions for button press.")
 
     # Gets the proper command to send based on the device type and desired action
-    def get_command(self, mic_type, action):
-        if mic_type == "IOT.SMARTPLUGSWITCH":
+    def get_command(self, device, action):
+        type = device.sys_info.get("mic_type")
+        if type is None:
+            type = device.sys_info["type"]
+
+        if type == "IOT.SMARTPLUGSWITCH":
             if action == "ON":
                 return '{"system":{"set_relay_state":{"state":1}}}'
             elif action == "OFF":
                 return '{"system":{"set_relay_state":{"state":0}}}'
-        elif mic_type == "IOT.SMARTBULB":
+        elif type == "IOT.SMARTBULB":
             if action == "ON":
                 return '{"smartlife.iot.smartbulb.lightingservice":{"transition_light_state":{"on_off":1,"transition_period":0}}}'
             elif action == "OFF":
