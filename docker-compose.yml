@@ -1,0 +1,37 @@
+version: "3.9"
+
+services:
+  ros-master:
+    image: ros:noetic
+    command: roscore
+    network_mode: "host"
+    healthcheck:
+      test: ["CMD-SHELL",". /opt/ros/noetic/setup.sh && rostopic list"]
+      interval: 1s
+      timeout: 2s
+      retries: 10
+      start_period: 5s
+
+  input:
+    build: .
+    command: rosrun kwii kwii_input_node
+    network_mode: "host"
+    depends_on:
+      ros-master:
+        condition: service_healthy
+
+  output:
+    build: .
+    command: rosrun kwii kwii-output.py
+    network_mode: "host"
+    depends_on:
+      ros-master:
+        condition: service_healthy
+
+  # echoer:
+  #   image: ros:noetic
+  #   command: rostopic echo /button_events
+  #   network_mode: "host"
+  #   depends_on:
+  #     ros-master:
+  #       condition: service_healthy
