@@ -3,23 +3,33 @@
 import asyncio
 from kasa import Discover
 import rospy
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 
 class kwii_main_node:
     def __init__(self, devices):
         rospy.init_node('kwii_main_node')
         self.command_pub = rospy.Publisher("commands", String, queue_size=10)
-        self.state_pub = rospy.Publisher("state", String, queue_size=10)
+        self.state_pub = rospy.Publisher("state", Bool, queue_size=10)
         self.devices = devices
-        self.button_sub = rospy.Subscriber("button_events", String, self.callback)
+        self.device = None
+        for key, value in self.devices.items():
+            if value.sys_info["alias"] == "Drew Lights":
+                self.device = value
+        self.button_sub = rospy.Subscriber("button_events", String, self.button_callback)
             
-    def callback(self, data):
+    def button_callback(self, data):
         if data.data == "A":
             self.command_pub.publish('{"system":{"set_relay_state":{"state":1}}}')
-            self.state_pub.publish("ON")
+            self.state_pub.publish(True)
         elif data.data == "B":
             self.command_pub.publish('{"system":{"set_relay_state":{"state":0}}}')
-            self.state_pub.publish("OFF")
+            self.state_pub.publish(False)
+        elif data.data == "HOME":
+            self.state_pub.publish(self.device.is_on)
+        else:
+            print("NOTA")
+
+        
 
 async def main():
     known_devices = await Discover.discover()

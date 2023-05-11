@@ -4,17 +4,19 @@
 #include <wiiuse.h>
 #include <ros/ros.h>
 #include <std_msgs/String.h>
+#include <std_msgs/Bool.h>
 
 #define MAX_WIIMOTES 1
 
 short any_wiimote_connected(wiimote **wm, int wiimotes);
-void state_callback(const std_msgs::String::ConstPtr &msg);
+void state_callback(const std_msgs::Bool::ConstPtr &msg);
+
+wiimote *wm;
 
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "kwii_input_node");
     wiimote **wiimotes;
-    wiimote *wm;
     int found, connected;
 
     // Init wiimote array
@@ -45,8 +47,8 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    // Turn on P1/P4 LED and rumble briefly to indicate connection success
-    wiiuse_set_leds(wm, WIIMOTE_LED_1 | WIIMOTE_LED_4);
+    // Turn on P1 LED and rumble briefly to indicate connection success
+    wiiuse_set_leds(wm, WIIMOTE_LED_1);
     wiiuse_rumble(wm, 1);
     usleep(200000);
     wiiuse_rumble(wm, 0);
@@ -72,6 +74,12 @@ int main(int argc, char **argv)
             {
                 std_msgs::String str_msg;
                 str_msg.data = "B";
+                pub.publish(str_msg);
+            }
+            else if IS_PRESSED (wm, WIIMOTE_BUTTON_HOME)
+            {
+                std_msgs::String str_msg;
+                str_msg.data = "HOME";
                 pub.publish(str_msg);
             }
         }
@@ -103,7 +111,9 @@ short any_wiimote_connected(wiimote **wm, int wiimotes)
     return 0;
 }
 
-void state_callback(const std_msgs::String::ConstPtr &msg)
+void state_callback(const std_msgs::Bool::ConstPtr &msg)
 {
-    std::cout << "Device State: " << msg->data.c_str() << std::endl;
+    bool state = msg->data;
+    std::cout << "Device State: " << state << std::endl;
+    wiiuse_set_leds(wm, WIIMOTE_LED_1 | (state ? WIIMOTE_LED_2 : WIIMOTE_LED_NONE));
 }
