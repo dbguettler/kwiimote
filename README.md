@@ -66,6 +66,8 @@ Press SYNC or (1) and (2) simultaneously to pair the Wii remote...
 
 The Wii remote will vibrate briefly when it is connected. The selected device will initially be `DEV_1`.
 
+To exit, simply hold the power button on the Wii remote until it turns off. The container will automatically exit.
+
 ## Controls
 | Button  | Action |
 | ------------- | ------------- |
