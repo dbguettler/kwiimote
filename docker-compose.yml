@@ -26,7 +26,7 @@ services:
 
   # echoer:
   #   image: ros:noetic-ros-core
-  #   command: rostopic echo /commands
+  #   command: rostopic echo ${TOPIC}
   #   network_mode: "host"
   #   depends_on:
   #     ros-core:
