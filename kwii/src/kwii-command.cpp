@@ -1,25 +1,8 @@
-/* Raw TP-Link (Kasa) command sender/receiver
+/* TP-Link (Kasa) command sender/receiver
  * Each invocation sends a single command and receives a single packet in response.
  *
- * This program is a minimal substitute for the tplink-lightbulb Node package.
- * Because it's C, it's about 40x faster than the Node package.  On a Raspberry
- * Pi, that matters.
- *
- * Building:
- *   make
- *
- * Usage:
- *   ./kasa <ip-address> <json-blob>
- *
- * There's a good list of JSON blobs to try here:
- *   https://github.com/softScheck/tplink-smartplug/blob/master/tplink-smarthome-commands.txt
- * Especially:
- *   - get bulb info: ./kasa <ip> '{"system":{"get_sysinfo":null}}'
- *   - turn bulb on:  ./kasa <ip> '{"system":{"set_relay_state":{"state":1}}}'
- *   - turn bulb off: ./kasa <ip> '{"system":{"set_relay_state":{"state":0}}}'
- *
- * Written by Patrick Reynolds <dukepiki@gmail.com>
- * Released into the public domain, or Creative Commons CC0, your choice.
+ * Adapted from code by Patrick Reynolds <dukepiki@gmail.com> at (https://github.com/piki/kasa)
+ * with just a few modification
  */
 
 #include <iostream>
@@ -61,9 +44,11 @@ void command_callback(const kwii::DevCmd::ConstPtr &msg);
 
 int main(int argc, char **argv)
 {
+	// Initialize ROS node with name "kwii_command_node"
 	ros::init(argc, argv, "kwii_command_node");
 	ros::NodeHandle handle;
 
+	// Subscribe to the "/commands topic"
 	ros::Subscriber sub = handle.subscribe("commands", 100, command_callback);
 
 	ros::spin();
@@ -71,6 +56,11 @@ int main(int argc, char **argv)
 	return EXIT_SUCCESS;
 }
 
+/**
+ * Executed whenever a command is received from the "/commands" topic
+ *
+ * @param msg DevCmd ROS message containing target IP and command string
+ */
 void command_callback(const kwii::DevCmd::ConstPtr &msg)
 {
 	struct in_addr addr;
