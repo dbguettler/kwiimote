@@ -6,18 +6,15 @@ import rospy
 from std_msgs.msg import String
         
 
-def callback(data, device):
-    my = asyncio.new_event_loop()
-    asyncio.set_event_loop(my)
+def callback(data, publ):
     if data.data == "A":
-        print("ON", flush=True)
-        asyncio.run(device.turn_on())
+        print("ON")
+        publ.publish('{"system":{"set_relay_state":{"state":1}}}')
     elif data.data == "B":
-        print("OFF", flush=True)
-        asyncio.run(device.turn_off())
+        print("OFF")
+        publ.publish('{"system":{"set_relay_state":{"state":0}}}')
 
 async def main():
-    loop = asyncio.get_event_loop()
     known_devices = await Discover.discover()
     device = None
     for key, value in known_devices.items():
@@ -28,10 +25,11 @@ async def main():
         print("No device found")
         exit(1)
     else:
-        print("Device is", device, flush=True)
-
+        print("Device is", device)
+        
+    pub = rospy.Publisher("commands", String, queue_size=10)
     rospy.init_node('kwii_output_node')
-    rospy.Subscriber('button_events', String, callback, (device))
+    rospy.Subscriber('button_events', String, callback, (pub))
     rospy.spin()
 
 

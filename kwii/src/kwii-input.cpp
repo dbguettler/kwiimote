@@ -20,7 +20,8 @@ int main(int argc, char **argv)
     wiimotes = wiiuse_init(MAX_WIIMOTES);
     wm = wiimotes[0];
 
-    std::cout << std::flush;
+    // std::cout << "Searching for wiimotes..." << std::endl;
+    // std::cout << std::flush;
 
     // Find wiimotes to use
     found = wiiuse_find(&wm, MAX_WIIMOTES, 5);
@@ -59,8 +60,8 @@ int main(int argc, char **argv)
     ros::Publisher pub = handle.advertise<std_msgs::String>("button_events", 10);
 
     // printf("\n\nPress 'A' on the Wii remote to exit...\n");
-    std::cout << "Power off the Wii remote to exit..." << std::endl;
-    std::cout << std::flush;
+    std::cout << "Power off the Wii remote to exit." << std::endl;
+    // std::cout << std::flush;
 
     while (any_wiimote_connected(&wm, MAX_WIIMOTES) && ros::ok())
     {

@@ -136,6 +136,7 @@ include_directories(
 # add_executable(${PROJECT_NAME}_node src/kwii_node.cpp)
 
 add_executable(kwii_input_node src/kwii-input.cpp)
+add_executable(kwii_command_node src/kasa.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -152,6 +153,7 @@ add_executable(kwii_input_node src/kwii-input.cpp)
 #   ${catkin_LIBRARIES}
 # )
 target_link_libraries(kwii_input_node ${catkin_LIBRARIES} wiiuse bluetooth)
+target_link_libraries(kwii_command_node ${catkin_LIBRARIES})
 
 #############
 ## Install ##
