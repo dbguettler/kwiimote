@@ -1,4 +1,4 @@
-FROM ros:noetic
+FROM ros:noetic-ros-core
 WORKDIR /
 RUN apt-get update && apt-get install -y git libbluetooth-dev pip
 RUN pip install python-kasa
@@ -10,7 +10,6 @@ RUN make install
 WORKDIR /app
 RUN rm -rf /wiiuse
 RUN mkdir src
-RUN . /opt/ros/noetic/setup.sh && catkin_make
 COPY ./entry.sh /
 RUN chmod +x /entry.sh
 COPY ./kwii /app/src/kwii/
