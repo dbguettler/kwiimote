@@ -4,7 +4,7 @@ services:
   ros-core:
     container_name: ros-core
     tty: true
-    image: ros:noetic
+    image: ros:noetic-ros-core
     command: roscore
     network_mode: "host"
     healthcheck:
@@ -24,24 +24,8 @@ services:
       ros-core:
         condition: service_healthy
 
-  # output:
-  #   build: .
-  #   command: rosrun kwii kwii-output.py
-  #   network_mode: "host"
-  #   depends_on:
-  #     ros-core:
-  #       condition: service_healthy
-
-  # command:
-  #   build: .
-  #   command: rosrun kwii kwii_command_node
-  #   network_mode: "host"
-  #   depends_on:
-  #     ros-core:
-  #       condition: service_healthy
-
   # echoer:
-  #   image: ros:noetic
+  #   image: ros:noetic-ros-core
   #   command: rostopic echo /commands
   #   network_mode: "host"
   #   depends_on:
