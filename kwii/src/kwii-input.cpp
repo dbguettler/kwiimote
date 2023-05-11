@@ -5,11 +5,12 @@
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <std_msgs/Bool.h>
+#include "kwii/DevState.h"
 
 #define MAX_WIIMOTES 1
 
 short any_wiimote_connected(wiimote **wm, int wiimotes);
-void state_callback(const std_msgs::Bool::ConstPtr &msg);
+void state_callback(const kwii::DevState::ConstPtr &msg);
 
 wiimote *wm;
 
@@ -48,7 +49,7 @@ int main(int argc, char **argv)
     }
 
     // Turn on P1 LED and rumble briefly to indicate connection success
-    wiiuse_set_leds(wm, WIIMOTE_LED_1);
+    wiiuse_set_leds(wm, WIIMOTE_LED_1 | WIIMOTE_LED_3);
     wiiuse_rumble(wm, 1);
     usleep(200000);
     wiiuse_rumble(wm, 0);
@@ -58,6 +59,7 @@ int main(int argc, char **argv)
     ros::Publisher pub = handle.advertise<std_msgs::String>("button_events", 10);
     ros::Subscriber sub = handle.subscribe("state", 100, state_callback);
 
+    std::cout << "Wiimote battery: " << wm->battery_level * 100 << " %" << std::endl;
     std::cout << "Power off the Wii remote to exit." << std::endl;
 
     while (any_wiimote_connected(&wm, MAX_WIIMOTES) && ros::ok())
@@ -77,6 +79,14 @@ int main(int argc, char **argv)
             else if IS_PRESSED (wm, WIIMOTE_BUTTON_HOME)
             {
                 str_msg.data = "HOME";
+            }
+            else if IS_PRESSED (wm, WIIMOTE_BUTTON_ONE)
+            {
+                str_msg.data = "1";
+            }
+            else if IS_PRESSED (wm, WIIMOTE_BUTTON_TWO)
+            {
+                str_msg.data = "2";
             }
 
             if (str_msg.data.compare("") != 0)
@@ -112,9 +122,10 @@ short any_wiimote_connected(wiimote **wm, int wiimotes)
     return 0;
 }
 
-void state_callback(const std_msgs::Bool::ConstPtr &msg)
+void state_callback(const kwii::DevState::ConstPtr &msg)
 {
-    bool state = msg->data;
-    std::cout << "Device State: " << state << std::endl;
-    wiiuse_set_leds(wm, WIIMOTE_LED_1 | (state ? WIIMOTE_LED_2 : WIIMOTE_LED_NONE));
+    bool state = msg->state;
+    int16_t device = msg->device;
+    std::cout << "Device " << device << " state: " << state << std::endl;
+    wiiuse_set_leds(wm, WIIMOTE_LED_1 | (state ? WIIMOTE_LED_2 : WIIMOTE_LED_NONE) | (device == 0 ? WIIMOTE_LED_3 : WIIMOTE_LED_4));
 }

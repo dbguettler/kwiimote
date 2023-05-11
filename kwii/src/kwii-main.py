@@ -4,51 +4,96 @@ import asyncio
 from kasa import Discover
 import rospy
 from std_msgs.msg import String, Bool
-from kwii.msg import DevCmd
+from kwii.msg import DevCmd, DevState
 from os import environ
 
 
 class kwii_main_node:
     def __init__(self, devices, dev_aliases):
+        # Initialize ROS node with name "kwii_main_node"
         rospy.init_node("kwii_main_node")
+
+        # Set up publisher for Kasa device commands and device state
         self.command_pub = rospy.Publisher("commands", DevCmd, queue_size=10)
-        self.state_pub = rospy.Publisher("state", Bool, queue_size=10)
-        self.devices = devices
-        self.device = None
-        for key, value in self.devices.items():
+        self.state_pub = rospy.Publisher("state", DevState, queue_size=10)
+
+        # Locate desired devices
+        self.devices = [None, None]
+        for key, value in devices.items():
             if value.sys_info["alias"] == dev_aliases[0]:
-                self.device = value
-        if self.device is None:
+                self.devices[0] = value
+            elif value.sys_info["alias"] == dev_aliases[1]:
+                self.devices[1] = value
+
+        # Check if devices could be located
+        if self.devices[0] is None:
             print("Error: could not locate device ", dev_aliases[0])
             exit(1)
         else:
-            print("Located device", dev_aliases[0], "at", self.device.host)
+            print("Located device", dev_aliases[0], "at", self.devices[0].host)
+        if self.devices[1] is None:
+            print("Error: could not locate device ", dev_aliases[1])
+            exit(1)
+        else:
+            print("Located device", dev_aliases[1], "at", self.devices[1].host)
+
+        # Set up subscriber for wiimote button presses
         self.button_sub = rospy.Subscriber(
             "button_events", String, self.button_callback
         )
         self.state_initialized = False
+        self.current_device = 0
+        self.statuses = [self.devices[0].is_on, self.devices[1].is_on]
 
     def button_callback(self, data):
         if not self.state_initialized:
             self.state_initialized = True
-            self.state_pub.publish(self.device.is_on)
+            state_msg = DevState()
+            state_msg.device = self.current_device
+            state_msg.state = self.statuses[self.current_device]
+            self.state_pub.publish(state_msg)
 
         if data.data == "A":
             cmd_msg = DevCmd()
-            cmd_msg.cmd = self.get_command(self.device.sys_info["mic_type"], "ON")
+            cmd_msg.cmd = self.get_command(
+                self.devices[self.current_device].sys_info["mic_type"], "ON"
+            )
 
             if not cmd_msg.cmd == "":
-                cmd_msg.ip = self.device.host
+                cmd_msg.ip = self.devices[self.current_device].host
                 self.command_pub.publish(cmd_msg)
-                self.state_pub.publish(True)
+                state_msg = DevState()
+                state_msg.device = self.current_device
+                state_msg.state = True
+                self.state_pub.publish(state_msg)
+                self.statuses[self.current_device] = True
         elif data.data == "B":
             cmd_msg = DevCmd()
-            cmd_msg.cmd = self.get_command(self.device.sys_info["mic_type"], "OFF")
+            cmd_msg.cmd = self.get_command(
+                self.devices[self.current_device].sys_info["mic_type"], "OFF"
+            )
 
             if not cmd_msg.cmd == "":
-                cmd_msg.ip = self.device.host
+                cmd_msg.ip = self.devices[self.current_device].host
                 self.command_pub.publish(cmd_msg)
-                self.state_pub.publish(False)
+                state_msg = DevState()
+                state_msg.device = self.current_device
+                state_msg.state = False
+                self.state_pub.publish(state_msg)
+                self.statuses[self.current_device] = False
+        elif data.data == "1":
+            self.current_device = 0
+            state_msg = DevState()
+            state_msg.device = self.current_device
+            state_msg.state = self.statuses[self.current_device]
+            self.state_pub.publish(state_msg)
+
+        elif data.data == "2":
+            self.current_device = 1
+            state_msg = DevState()
+            state_msg.device = self.current_device
+            state_msg.state = self.statuses[self.current_device]
+            self.state_pub.publish(state_msg)
         else:
             print("NOTA")
 
