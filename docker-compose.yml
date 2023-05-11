@@ -1,18 +1,6 @@
 version: "3.9"
 
 services:
-  ros-core:
-    container_name: ros-core
-    tty: true
-    image: ros:noetic-ros-core
-    command: roscore
-    network_mode: "host"
-    healthcheck:
-      test: ["CMD-SHELL",". /opt/ros/noetic/setup.sh && rostopic list"]
-      interval: 1s
-      timeout: 2s
-      retries: 10
-      start_period: 5s
 
   ros-nodes:
     container_name: ros-nodes
@@ -20,14 +8,20 @@ services:
     build: .
     command: roslaunch kwii kwii.launch
     network_mode: "host"
-    depends_on:
-      ros-core:
-        condition: service_healthy
+    environment:
+      - DEV_1=${DEV_1}
+      - DEV_2=${DEV_2}
+    healthcheck:
+      test: ["CMD-SHELL",". /opt/ros/noetic/setup.sh && rostopic list"]
+      interval: 1s
+      timeout: 2s
+      retries: 5
+      start_period: 3s
 
-  # echoer:
-  #   image: ros:noetic-ros-core
-  #   command: rostopic echo ${TOPIC}
-  #   network_mode: "host"
-  #   depends_on:
-  #     ros-core:
-  #       condition: service_healthy
+  echoer:
+    image: ros:noetic-ros-core
+    command: rostopic echo ${TOPIC}
+    network_mode: "host"
+    depends_on:
+      ros-nodes:
+        condition: service_healthy
